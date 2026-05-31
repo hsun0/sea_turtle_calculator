@@ -537,6 +537,31 @@ textarea {
   font-size: 14px;
 }
 
+.csv-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  color: #073343;
+  background: #a5f3fc;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.csv-upload:hover {
+  background: #cffafe;
+}
+
+.csv-upload input {
+  max-width: 220px;
+  color: #073343;
+  font-size: 13px;
+}
+
 .text-link {
   color: #fde047;
   font-weight: 800;

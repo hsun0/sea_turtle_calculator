@@ -146,6 +146,113 @@ function tableTotals(tableId) {
   return totals;
 }
 
+function parseCsvRows(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      value += '"';
+      i++;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      row.push(value.trim());
+      value = "";
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") i++;
+      row.push(value.trim());
+      if (row.some((cell) => cell !== "")) rows.push(row);
+      row = [];
+      value = "";
+    } else {
+      value += char;
+    }
+  }
+
+  row.push(value.trim());
+  if (row.some((cell) => cell !== "")) rows.push(row);
+  return rows;
+}
+
+function csvRowsToTableData(rows) {
+  if (rows.length < 2) {
+    throw new Error("CSV 至少需要標題列與一列資料。");
+  }
+
+  const headers = rows[0];
+  const columns = [
+    "寶特瓶／塑膠瓶",
+    "塑膠袋",
+    "吸管／免洗餐具",
+    "塑膠杯／塑膠容器",
+    "小塑膠垃圾",
+  ];
+  const indexes = columns.map((column) => headers.indexOf(column));
+
+  if (indexes.some((index) => index === -1)) {
+    throw new Error("CSV 欄位格式不符，請使用 part1.csv / part2.csv 的欄位格式。");
+  }
+
+  return rows.slice(1)
+    .filter((row) => row[0] && /^\d+$/.test(row[0]))
+    .map((row) => indexes.map((index) => {
+      const rawValue = row[index] ?? "";
+      const value = Number(rawValue);
+      if (Number.isNaN(value)) {
+        throw new Error(`CSV 中有不是數字的內容：${rawValue}`);
+      }
+      return value;
+    }));
+}
+
+function setTableData(tableId, dataRows) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+
+  const body = table.querySelector("tbody");
+  body.innerHTML = "";
+  dataRows.forEach((values) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <th></th>
+      ${values.map((value) => `<td><input value="${value}"></td>`).join("")}
+      <td class="row-total">0</td>
+      <td><button class="delete-row-button" onclick="deleteDataRow(this)">刪除</button></td>
+    `;
+    body.appendChild(row);
+  });
+
+  bindTableInputs(table);
+  updateTableTotals(table);
+}
+
+function loadCsvIntoTable(event, tableId) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const rows = parseCsvRows(String(reader.result || ""));
+      const dataRows = csvRowsToTableData(rows);
+      if (dataRows.length < 2) {
+        throw new Error("CSV 至少需要兩列有效資料。");
+      }
+      setTableData(tableId, dataRows);
+    } catch (error) {
+      alert(error.message);
+      event.target.value = "";
+    }
+  };
+  reader.readAsText(file, "utf-8");
+}
+
 function addDataRow(tableId) {
   const table = document.getElementById(tableId);
   if (!table) return;

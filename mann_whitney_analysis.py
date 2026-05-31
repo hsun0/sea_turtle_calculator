@@ -161,11 +161,7 @@ def main() -> int:
             f"- {item_name}: Part 1 median {median(part1):.2f}, "
             f"Part 2 median {median(part2):.2f}, p={p_value:.4f}, {status}"
         )
-
-    print(
-        "\nNote: Mann-Whitney U is a non-parametric test for two independent groups. "
-        "It is useful when the two responses cannot be paired or when normality is uncertain."
-    )
+        
     return 0
 
 
