@@ -28,7 +28,7 @@
               <h2>第一次實驗</h2>
               <label class="csv-upload">
                 <span>上傳第一次 CSV</span>
-                <input type="file" accept=".csv,text/csv" onchange="loadCsvIntoTable(event, 'welch-table-1')">
+                <input type="file" accept=".csv,text/csv" data-table-id="welch-table-1">
               </label>
               <div class="table-scroll">
                 <table class="data-table" id="welch-table-1">
@@ -62,7 +62,7 @@
               <h2>第二次表單</h2>
               <label class="csv-upload">
                 <span>上傳第二次 CSV</span>
-                <input type="file" accept=".csv,text/csv" onchange="loadCsvIntoTable(event, 'welch-table-2')">
+                <input type="file" accept=".csv,text/csv" data-table-id="welch-table-2">
               </label>
               <div class="table-scroll">
                 <table class="data-table" id="welch-table-2">
@@ -102,6 +102,6 @@
     </section>
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=20260601"></script>
 </body>
 </html>

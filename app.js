@@ -253,6 +253,14 @@ function loadCsvIntoTable(event, tableId) {
   reader.readAsText(file, "utf-8");
 }
 
+function initializeCsvUploads() {
+  document.querySelectorAll('input[type="file"][data-table-id]').forEach((input) => {
+    input.addEventListener("change", (event) => {
+      loadCsvIntoTable(event, input.dataset.tableId);
+    });
+  });
+}
+
 function addDataRow(tableId) {
   const table = document.getElementById(tableId);
   if (!table) return;
@@ -539,5 +547,6 @@ function logGamma(z) {
 createBubbles();
 calculateTurtles();
 initializeDataTables();
+initializeCsvUploads();
 runWelchTest();
 runMannWhitneyTest();
