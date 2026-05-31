@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mann-Whitney U 檢定</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="bubbles-container"></div>
+  <main class="app">
+    <aside class="sidebar">
+      <div class="brand">海龜生命<br>分析工具</div>
+      <a class="nav-button" href="turtle_calculator.html">海龜生命計算機</a>
+      <a class="nav-button" href="welch_test.html">Welch 獨立樣本 t 檢定</a>
+      <a class="nav-button active" href="mann_whitney.html">Mann-Whitney U 檢定</a>
+    </aside>
+
+    <section class="content">
+      <section class="page active">
+        <div class="panel">
+          <h1>Mann-Whitney U 檢定</h1>
+          <p>當兩組資料不能配對，而且不確定資料是否符合常態分布時，可以使用這個非參數檢定。</p>
+          <div class="hint">每一列代表一筆表單回覆。程式會自動加總每列的 5 個項目，再比較兩次表單的總量。</div>
+
+          <div class="form-table-grid">
+            <section>
+              <h2>第一次實驗</h2>
+              <div class="table-scroll">
+                <table class="data-table" id="mann-table-1">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>寶特瓶</th>
+                      <th>塑膠袋</th>
+                      <th>吸管/免洗餐具</th>
+                      <th>塑膠杯/容器</th>
+                      <th>小塑膠垃圾</th>
+                      <th>總量</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><th>1</th><td><input value="0"></td><td><input value="0"></td><td><input value="0"></td><td><input value="0"></td><td><input value="0"></td><td class="row-total">0</td><td><button class="delete-row-button" onclick="deleteWelchRow(this)">刪除</button></td></tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="8">
+                        <button class="add-row-button" onclick="addDataRow('mann-table-1')">＋ 新增一列</button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+
+            <section>
+              <h2>第二次表單</h2>
+              <div class="table-scroll">
+                <table class="data-table" id="mann-table-2">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>寶特瓶</th>
+                      <th>塑膠袋</th>
+                      <th>吸管/免洗餐具</th>
+                      <th>塑膠杯/容器</th>
+                      <th>小塑膠垃圾</th>
+                      <th>總量</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><th>1</th><td><input value="0"></td><td><input value="0"></td><td><input value="0"></td><td><input value="0"></td><td><input value="0"></td><td class="row-total">0</td><td><button class="delete-row-button" onclick="deleteWelchRow(this)">刪除</button></td></tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="8">
+                        <button class="add-row-button" onclick="addDataRow('mann-table-2')">＋ 新增一列</button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <p>
+            <button class="primary-button" onclick="runMannWhitneyTest()">執行 Mann-Whitney U 檢定</button>
+          </p>
+          <div id="mann-result" class="result">檢定結果會顯示在這裡。</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
