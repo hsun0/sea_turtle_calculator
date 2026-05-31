@@ -25,20 +25,43 @@ except ImportError as exc:
     ) from exc
 
 
-DEFAULT_PART1 = "減塑行動 Part 1 (回覆) - 表單回覆 1.csv"
-DEFAULT_PART2 = "減塑行動 Part 2 (回覆) - 表單回覆 1.csv"
+DEFAULT_PART1 = "part1.csv"
+DEFAULT_PART2 = "part2.csv"
 ITEM_NAMES = {
     "本週丟棄了多少個寶特瓶?": "plastic bottles",
     "本週丟棄了多少個塑膠袋?": "plastic bags",
     "本週丟棄了多少吸管/免洗餐具?(總和)": "straws/disposable tableware",
     "本週丟棄了多少塑膠杯/塑膠容器?": "plastic cups/containers",
     "本週丟棄了多少小塑膠垃圾(例如吸管套、塑膠包裝)?": "small plastic waste",
+    "寶特瓶／塑膠瓶": "plastic bottles",
+    "塑膠袋": "plastic bags",
+    "吸管／免洗餐具": "straws/disposable tableware",
+    "塑膠杯／塑膠容器": "plastic cups/containers",
+    "小塑膠垃圾": "small plastic waste",
 }
+TABLE_WASTE_COLUMNS = [
+    "寶特瓶／塑膠瓶",
+    "塑膠袋",
+    "吸管／免洗餐具",
+    "塑膠杯／塑膠容器",
+    "小塑膠垃圾",
+]
+TOTAL_COLUMN = "合計"
 
 
 def load_rows(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8-sig", newline="") as file:
-        rows = list(csv.DictReader(file))
+        rows = []
+        for row in csv.DictReader(file):
+            if row.get(None):
+                row[TOTAL_COLUMN] = row[None][-1]
+                del row[None]
+
+            row_id = row.get("編號")
+            if row_id is not None and not row_id.strip().isdigit():
+                continue
+
+            rows.append(row)
 
     if not rows:
         raise ValueError(f"{path} has no response rows.")
@@ -47,6 +70,9 @@ def load_rows(path: Path) -> list[dict[str, str]]:
 
 
 def waste_columns(rows: list[dict[str, str]]) -> list[str]:
+    table_columns = [column for column in TABLE_WASTE_COLUMNS if column in rows[0]]
+    if table_columns:
+        return table_columns
     return [column for column in rows[0] if column.startswith("本週丟棄")]
 
 
@@ -64,6 +90,8 @@ def column_values(rows: list[dict[str, str]], column: str) -> list[float]:
 
 
 def total_values(rows: list[dict[str, str]], columns: list[str]) -> list[float]:
+    if TOTAL_COLUMN in rows[0]:
+        return column_values(rows, TOTAL_COLUMN)
     return [sum(column_values([row], column)[0] for column in columns) for row in rows]
 
 
