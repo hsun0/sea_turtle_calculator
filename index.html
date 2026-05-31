@@ -70,11 +70,23 @@
         }
 
         @media (max-width: 768px) {
+            html {
+                touch-action: manipulation;
+            }
+
             body {
                 align-items: flex-start !important;
                 overflow-y: auto !important;
                 overflow-x: hidden !important;
                 padding: 12px 0 24px !important;
+                touch-action: manipulation;
+            }
+
+            button,
+            input,
+            .glass-panel,
+            .slide-container {
+                touch-action: manipulation;
             }
 
             .slide-container {
@@ -235,6 +247,15 @@
             }
         }
         createBubbles();
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
 
         function updateValue(type, change) {
             const input = document.getElementById(`input-${type}`);
