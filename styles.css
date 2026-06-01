@@ -529,7 +529,221 @@ textarea {
   border-radius: 10px;
   background: rgba(0, 25, 38, 0.32);
   line-height: 1.8;
-  white-space: pre-line;
+}
+
+.analysis-summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  margin-bottom: 16px;
+}
+
+.analysis-summary.significant {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(6, 78, 59, 0.38));
+  box-shadow: 0 14px 28px rgba(16, 185, 129, 0.14);
+}
+
+.analysis-summary.not-significant {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.28), rgba(120, 53, 15, 0.3));
+  box-shadow: 0 14px 28px rgba(251, 191, 36, 0.1);
+}
+
+.analysis-eyebrow {
+  color: #c9f4ff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.analysis-conclusion {
+  margin-top: 4px;
+  color: #fff;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.analysis-direction {
+  margin-top: 8px;
+  color: #eafdff;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.p-value-card {
+  min-width: 150px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  text-align: center;
+  color: #073343;
+  background: #fde047;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+.p-value-card span,
+.p-value-card small {
+  display: block;
+  font-weight: 800;
+}
+
+.p-value-card strong {
+  display: block;
+  margin: 2px 0;
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.analysis-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.analysis-stat,
+.analysis-details div {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+}
+
+.analysis-stat span,
+.analysis-details span {
+  display: block;
+  color: #c9f4ff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.analysis-stat strong {
+  display: block;
+  margin-top: 4px;
+  color: #fde047;
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.analysis-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analysis-details strong {
+  display: block;
+  margin-top: 4px;
+  color: #fff;
+  font-size: 16px;
+}
+
+.item-results {
+  margin-top: 18px;
+}
+
+.item-results-title {
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.item-result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.item-result-card {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 14px;
+}
+
+.item-result-card.significant {
+  border-color: rgba(52, 211, 153, 0.46);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 78, 59, 0.24));
+}
+
+.item-result-card.not-significant {
+  border-color: rgba(253, 224, 71, 0.3);
+}
+
+.item-result-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.item-result-heading strong {
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.item-result-heading span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: #073343;
+  background: #fde047;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.item-result-card.significant .item-result-heading span {
+  color: #052e1c;
+  background: #86efac;
+}
+
+.item-result-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.item-result-values div {
+  border-radius: 8px;
+  background: rgba(0, 25, 38, 0.2);
+  padding: 9px;
+}
+
+.item-result-values span {
+  display: block;
+  color: #c9f4ff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.item-result-values strong {
+  display: block;
+  margin-top: 3px;
+  color: #fde047;
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.error-result {
+  border: 1px solid rgba(248, 113, 113, 0.55);
+  color: #fee2e2;
+  background: rgba(127, 29, 29, 0.38);
+}
+
+.analysis-error-title {
+  color: #fecaca;
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 6px;
 }
 
 .hint {
@@ -597,5 +811,17 @@ textarea {
 
   .big-number {
     font-size: 64px;
+  }
+
+  .analysis-summary,
+  .analysis-stat-grid,
+  .analysis-details,
+  .item-result-grid,
+  .item-result-values {
+    grid-template-columns: 1fr;
+  }
+
+  .p-value-card {
+    width: 100%;
   }
 }

@@ -1,5 +1,12 @@
 const WEIGHTS = { bag: 135, straw: 81, bottle: 45 };
 const THREAT_PER_TURTLE = 405;
+const WASTE_ITEMS = [
+  "寶特瓶",
+  "塑膠袋",
+  "吸管/免洗餐具",
+  "塑膠杯/容器",
+  "小塑膠垃圾",
+];
 
 function createBubbles() {
   const container = document.getElementById("bubbles-container");
@@ -144,6 +151,28 @@ function tableTotals(tableId) {
     throw new Error("每一組表格至少需要兩列有效資料。");
   }
   return totals;
+}
+
+function tableItemValues(tableId) {
+  const table = document.getElementById(tableId);
+  if (!table) return null;
+
+  const itemValues = WASTE_ITEMS.map(() => []);
+  table.querySelectorAll("tbody tr").forEach((row) => {
+    const inputs = [...row.querySelectorAll("input")];
+    if (inputs.length === 0) return;
+    const hasValue = inputs.some((input) => input.value.trim() !== "");
+    if (!hasValue) return;
+
+    inputs.slice(0, WASTE_ITEMS.length).forEach((input, index) => {
+      itemValues[index].push(readNumberInput(input));
+    });
+  });
+
+  if (itemValues.some((values) => values.length < 2)) {
+    throw new Error("每一組表格至少需要兩列有效資料。");
+  }
+  return itemValues;
 }
 
 function parseCsvRows(text) {
@@ -349,6 +378,87 @@ function format(value, digits = 4) {
   return Number.isFinite(value) ? value.toFixed(digits) : "N/A";
 }
 
+function renderAnalysisResult({
+  output,
+  title,
+  p,
+  conclusion,
+  direction,
+  primaryStats,
+  detailStats,
+  itemResults = [],
+}) {
+  const isSignificant = p < 0.05;
+  output.classList.remove("error-result");
+  output.innerHTML = `
+    <div class="analysis-summary ${isSignificant ? "significant" : "not-significant"}">
+      <div>
+        <div class="analysis-eyebrow">${title}</div>
+        <div class="analysis-conclusion">${conclusion}</div>
+        <div class="analysis-direction">${direction}</div>
+      </div>
+      <div class="p-value-card">
+        <span>p 值</span>
+        <strong>${format(p, 4)}</strong>
+        <small>α = 0.05</small>
+      </div>
+    </div>
+    <div class="analysis-stat-grid">
+      ${primaryStats.map((item) => `
+        <div class="analysis-stat">
+          <span>${item.label}</span>
+          <strong>${item.value}</strong>
+        </div>
+      `).join("")}
+    </div>
+    <div class="analysis-details">
+      ${detailStats.map((item) => `
+        <div>
+          <span>${item.label}</span>
+          <strong>${item.value}</strong>
+        </div>
+      `).join("")}
+    </div>
+    ${itemResults.length ? `
+      <section class="item-results">
+        <div class="item-results-title">各項目結果</div>
+        <div class="item-result-grid">
+          ${itemResults.map((item) => `
+            <article class="item-result-card ${item.isSignificantDecrease ? "significant" : "not-significant"}">
+              <div class="item-result-heading">
+                <strong>${item.label}</strong>
+                <span>${item.isSignificantDecrease ? "顯著下降" : "未達顯著下降"}</span>
+              </div>
+              <div class="item-result-values">
+                <div>
+                  <span>${item.part1Label}</span>
+                  <strong>${item.part1Value}</strong>
+                </div>
+                <div>
+                  <span>${item.part2Label}</span>
+                  <strong>${item.part2Value}</strong>
+                </div>
+                <div>
+                  <span>p 值</span>
+                  <strong>${item.pValue}</strong>
+                </div>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
+  `;
+}
+
+function renderAnalysisError(output, message) {
+  output.classList.add("error-result");
+  output.innerHTML = `
+    <div class="analysis-error-title">無法產生分析結果</div>
+    <div>${message}</div>
+  `;
+}
+
 function runWelchTest() {
   const output = document.getElementById("welch-result");
   if (!output) return;
@@ -356,31 +466,55 @@ function runWelchTest() {
   try {
     const group1 = tableTotals("welch-table-1") || parseNumbers(document.getElementById("welch-group-1").value);
     const group2 = tableTotals("welch-table-2") || parseNumbers(document.getElementById("welch-group-2").value);
+    const itemValues1 = tableItemValues("welch-table-1");
+    const itemValues2 = tableItemValues("welch-table-2");
     const m1 = mean(group1);
     const m2 = mean(group2);
-    const v1 = variance(group1);
-    const v2 = variance(group2);
-    const se = Math.sqrt(v1 / group1.length + v2 / group2.length);
-    const t = (m1 - m2) / se;
-    const dfNumerator = (v1 / group1.length + v2 / group2.length) ** 2;
-    const dfDenominator =
-      (v1 / group1.length) ** 2 / (group1.length - 1) +
-      (v2 / group2.length) ** 2 / (group2.length - 1);
-    const df = dfNumerator / dfDenominator;
-    const p = 2 * (1 - studentTCdf(Math.abs(t), df));
+    const result = welchTTest(group1, group2);
+    const t = result.t;
+    const df = result.df;
+    const p = result.pValue;
     const direction = m1 > m2 ? "第一組平均高於第二組。" : "第一組平均低於第二組。";
+    const itemResults = itemValues1 && itemValues2
+      ? WASTE_ITEMS.map((label, index) => {
+          const part1 = itemValues1[index];
+          const part2 = itemValues2[index];
+          const itemTest = welchTTest(part1, part2);
+          const part1Mean = mean(part1);
+          const part2Mean = mean(part2);
 
-    output.textContent =
-      `第一組：n=${group1.length}，平均=${format(m1, 2)}，標準差=${format(sd(group1), 2)}\n` +
-      `第二組：n=${group2.length}，平均=${format(m2, 2)}，標準差=${format(sd(group2), 2)}\n` +
-      `平均差異：${format(m1 - m2, 2)}\n` +
-      `t(${format(df, 2)}) = ${format(t, 3)}\n` +
-      `p 值 = ${format(p, 4)}\n` +
-      `α = 0.05\n` +
-      `結論：${p < 0.05 ? "有顯著差異" : "沒有顯著差異"}\n` +
-      direction;
+          return {
+            label,
+            part1Label: "第一次平均",
+            part2Label: "第二次平均",
+            part1Value: format(part1Mean, 2),
+            part2Value: format(part2Mean, 2),
+            pValue: format(itemTest.pValue, 4),
+            isSignificantDecrease: itemTest.pValue < 0.05 && part1Mean > part2Mean,
+          };
+        })
+      : [];
+
+    renderAnalysisResult({
+      output,
+      title: "Welch 獨立樣本 t 檢定",
+      p,
+      conclusion: p < 0.05 ? "有顯著差異" : "沒有顯著差異",
+      direction,
+      primaryStats: [
+        { label: "第一組平均", value: format(m1, 2) },
+        { label: "第二組平均", value: format(m2, 2) },
+        { label: "平均差異", value: format(m1 - m2, 2) },
+      ],
+      detailStats: [
+        { label: "第一組", value: `n=${group1.length}，SD=${format(sd(group1), 2)}` },
+        { label: "第二組", value: `n=${group2.length}，SD=${format(sd(group2), 2)}` },
+        { label: "t 統計量", value: `t(${format(df, 2)}) = ${format(t, 3)}` },
+      ],
+      itemResults,
+    });
   } catch (error) {
-    output.textContent = error.message;
+    renderAnalysisError(output, error.message);
   }
 }
 
@@ -391,23 +525,69 @@ function runMannWhitneyTest() {
   try {
     const group1 = tableTotals("mann-table-1") || parseNumbers(document.getElementById("mann-group-1").value);
     const group2 = tableTotals("mann-table-2") || parseNumbers(document.getElementById("mann-group-2").value);
+    const itemValues1 = tableItemValues("mann-table-1");
+    const itemValues2 = tableItemValues("mann-table-2");
     const result = mannWhitneyU(group1, group2);
     const p = result.pValue;
     const direction = median(group1) > median(group2)
       ? "第一組中位數高於第二組。"
       : "第一組中位數低於或等於第二組。";
+    const itemResults = itemValues1 && itemValues2
+      ? WASTE_ITEMS.map((label, index) => {
+          const part1 = itemValues1[index];
+          const part2 = itemValues2[index];
+          const itemTest = mannWhitneyU(part1, part2);
+          const part1Median = median(part1);
+          const part2Median = median(part2);
 
-    output.textContent =
-      `第一組：n=${group1.length}，中位數=${format(median(group1), 2)}，平均=${format(mean(group1), 2)}\n` +
-      `第二組：n=${group2.length}，中位數=${format(median(group2), 2)}，平均=${format(mean(group2), 2)}\n` +
-      `U 統計量 = ${format(result.u, 2)}\n` +
-      `p 值 = ${format(p, 4)}\n` +
-      `α = 0.05\n` +
-      `結論：${p < 0.05 ? "有顯著差異" : "沒有顯著差異"}\n` +
-      direction;
+          return {
+            label,
+            part1Label: "第一次中位數",
+            part2Label: "第二次中位數",
+            part1Value: format(part1Median, 2),
+            part2Value: format(part2Median, 2),
+            pValue: format(itemTest.pValue, 4),
+            isSignificantDecrease: itemTest.pValue < 0.05 && part1Median > part2Median,
+          };
+        })
+      : [];
+
+    renderAnalysisResult({
+      output,
+      title: "Mann-Whitney U 檢定",
+      p,
+      conclusion: p < 0.05 ? "有顯著差異" : "沒有顯著差異",
+      direction,
+      primaryStats: [
+        { label: "第一組中位數", value: format(median(group1), 2) },
+        { label: "第二組中位數", value: format(median(group2), 2) },
+        { label: "中位數差異", value: format(median(group1) - median(group2), 2) },
+      ],
+      detailStats: [
+        { label: "第一組", value: `n=${group1.length}，平均=${format(mean(group1), 2)}` },
+        { label: "第二組", value: `n=${group2.length}，平均=${format(mean(group2), 2)}` },
+        { label: "U 統計量", value: format(result.u, 2) },
+      ],
+      itemResults,
+    });
   } catch (error) {
-    output.textContent = error.message;
+    renderAnalysisError(output, error.message);
   }
+}
+
+function welchTTest(group1, group2) {
+  const v1 = variance(group1);
+  const v2 = variance(group2);
+  const se = Math.sqrt(v1 / group1.length + v2 / group2.length);
+  const t = (mean(group1) - mean(group2)) / se;
+  const dfNumerator = (v1 / group1.length + v2 / group2.length) ** 2;
+  const dfDenominator =
+    (v1 / group1.length) ** 2 / (group1.length - 1) +
+    (v2 / group2.length) ** 2 / (group2.length - 1);
+  const df = dfNumerator / dfDenominator;
+  const pValue = 2 * (1 - studentTCdf(Math.abs(t), df));
+
+  return { t, df, pValue };
 }
 
 function mannWhitneyU(group1, group2) {
