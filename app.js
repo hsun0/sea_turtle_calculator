@@ -474,7 +474,7 @@ function runWelchTest() {
     const t = result.t;
     const df = result.df;
     const p = result.pValue;
-    const direction = m1 > m2 ? "第一組平均高於第二組。" : "第一組平均低於第二組。";
+    const direction = m1 > m2 ? "第一組高於第二組。" : "第一組低於第二組。";
     const itemResults = itemValues1 && itemValues2
       ? WASTE_ITEMS.map((label, index) => {
           const part1 = itemValues1[index];
@@ -530,8 +530,8 @@ function runMannWhitneyTest() {
     const result = mannWhitneyU(group1, group2);
     const p = result.pValue;
     const direction = median(group1) > median(group2)
-      ? "第一組中位數高於第二組。"
-      : "第一組中位數低於或等於第二組。";
+      ? "第一組高於第二組。"
+      : "第一組低於或等於第二組。";
     const itemResults = itemValues1 && itemValues2
       ? WASTE_ITEMS.map((label, index) => {
           const part1 = itemValues1[index];
